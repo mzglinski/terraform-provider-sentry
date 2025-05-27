@@ -34,6 +34,7 @@ resource "sentry_organization" "default" {
 
 - `alerts_member_write` (Boolean) Allow members to create, edit, and delete alert rules by granting them the `alerts:write` scope.
 - `allow_join_requests` (Boolean) Allow users to request to join your organization.
+- `allow_member_project_creation` (Boolean) Allow members to create projects.
 - `allow_shared_issues` (Boolean) Allow sharing of limited details on issues to anonymous users.
 - `attachments_role` (String) The role required to download event attachments. Valid values are `member`, `admin`, `manager`, `owner`.
 - `avatar` (String) The image to upload as the organization avatar, in base64. Required if `avatar_type` is `upload`.
