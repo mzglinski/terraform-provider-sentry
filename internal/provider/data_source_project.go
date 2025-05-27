@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-utils/sliceutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
+	"github.com/mzglinski/terraform-provider-sentry/internal/diagutils"
 )
 
 type ProjectDataSourceModel struct {

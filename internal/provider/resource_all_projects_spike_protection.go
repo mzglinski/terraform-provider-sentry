@@ -16,10 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/go-utils/sliceutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
+	"github.com/mzglinski/terraform-provider-sentry/internal/diagutils"
+	"github.com/mzglinski/terraform-provider-sentry/internal/sentryclient"
+	"github.com/mzglinski/terraform-provider-sentry/internal/tfutils"
 )
 
 type AllProjectsSpikeProtectionResourceModel struct {

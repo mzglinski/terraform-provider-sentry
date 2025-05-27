@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/jianyuan/go-utils/maputils"
 	"github.com/jianyuan/go-utils/ptr"
-	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
+	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
+	"github.com/mzglinski/terraform-provider-sentry/internal/diagutils"
+	"github.com/mzglinski/terraform-provider-sentry/internal/sentryclient"
 	supertypes "github.com/orange-cloudavenue/terraform-plugin-framework-supertypes"
 )
 

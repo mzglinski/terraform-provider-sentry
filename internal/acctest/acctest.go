@@ -5,10 +5,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/mzglinski/go-sentry/v2/sentry"
 	"github.com/jianyuan/go-utils/must"
-	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
+	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
+	"github.com/mzglinski/terraform-provider-sentry/internal/sentryclient"
 )
 
 const (

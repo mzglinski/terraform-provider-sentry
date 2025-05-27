@@ -1,4 +1,4 @@
-module github.com/jianyuan/terraform-provider-sentry
+module github.com/mzglinski/terraform-provider-sentry
 
 go 1.23.5
 
@@ -14,8 +14,8 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.18.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.1
 	github.com/hashicorp/terraform-plugin-testing v1.12.0
-	github.com/jianyuan/go-sentry/v2 v2.8.4
 	github.com/jianyuan/go-utils v0.0.0-20250223213401-62c93a9e0b6c
+	github.com/mzglinski/go-sentry/v2 v2.8.5
 	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/orange-cloudavenue/terraform-plugin-framework-superschema v1.11.0
@@ -107,3 +107,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/mzglinski/go-sentry/v2 => ../go-sentry

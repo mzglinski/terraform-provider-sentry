@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
+	"github.com/mzglinski/terraform-provider-sentry/internal/diagutils"
 )
 
 func ImportStateTwoPartId(ctx context.Context, part1 string, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

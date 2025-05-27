@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
+	"github.com/mzglinski/terraform-provider-sentry/internal/diagutils"
+	"github.com/mzglinski/terraform-provider-sentry/internal/sentrytypes"
 )
 
 var _ datasource.DataSource = &IssueAlertDataSource{}

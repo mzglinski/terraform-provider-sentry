@@ -16,12 +16,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	"github.com/jianyuan/go-sentry/v2/sentry"
+	"github.com/mzglinski/go-sentry/v2/sentry"
 	"github.com/jianyuan/go-utils/must"
 	"github.com/jianyuan/go-utils/ptr"
 	"github.com/jianyuan/go-utils/sliceutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
-	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/mzglinski/terraform-provider-sentry/internal/acctest"
+	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
 )
 
 func init() {

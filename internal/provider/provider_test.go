@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/jianyuan/go-utils/must"
-	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
-	"github.com/jianyuan/terraform-provider-sentry/sentry"
+	"github.com/mzglinski/terraform-provider-sentry/internal/acctest"
+	"github.com/mzglinski/terraform-provider-sentry/sentry"
 )
 
 // testAccProtoV6ProviderFactories are used to instantiate a provider during
@@ -63,7 +63,7 @@ func TestAccProvider_validation(t *testing.T) {
 			{
 				Config: `
 					provider "sentry" {
-						base_url = "https://github.com/jianyuan/terraform-provider-sentry"
+						base_url = "https://github.com/mzglinski/terraform-provider-sentry"
 					}
 
 					data "sentry_organization" "test" {

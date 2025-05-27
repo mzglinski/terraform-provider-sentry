@@ -9,7 +9,7 @@ description: |-
 
 # Official Sentry Terraform Provider
 
-Set up Sentry Team, Projects, Alerts, and more. This provider is maintained with [Sentry.io](https://sentry.io)'s sponsorship. Please add any bug reports/feature requests in the [GitHub repo](https://github.com/jianyuan/terraform-provider-sentry/issues).
+Set up Sentry Team, Projects, Alerts, and more. This provider is maintained with [Sentry.io](https://sentry.io)'s sponsorship. Please add any bug reports/feature requests in the [GitHub repo](https://github.com/mzglinski/terraform-provider-sentry/issues).
 
 This provider utilizes the [Web APIs](https://docs.sentry.io/api/) to interact with Sentry resources.
 

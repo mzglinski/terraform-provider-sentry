@@ -23,12 +23,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/jianyuan/go-utils/sliceutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
-	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
-	"github.com/jianyuan/terraform-provider-sentry/internal/sentrydata"
-	"github.com/jianyuan/terraform-provider-sentry/internal/sentrytypes"
-	"github.com/jianyuan/terraform-provider-sentry/internal/tfutils"
+	"github.com/mzglinski/terraform-provider-sentry/internal/apiclient"
+	"github.com/mzglinski/terraform-provider-sentry/internal/diagutils"
+	"github.com/mzglinski/terraform-provider-sentry/internal/sentryclient"
+	"github.com/mzglinski/terraform-provider-sentry/internal/sentrydata"
+	"github.com/mzglinski/terraform-provider-sentry/internal/sentrytypes"
+	"github.com/mzglinski/terraform-provider-sentry/internal/tfutils"
 )
 
 type ProjectFilterResourceModel struct {
