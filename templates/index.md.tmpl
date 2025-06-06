@@ -2,7 +2,7 @@
 # Generated from templates/index.md.tmpl
 # DO NOT EDIT DIRECTLY
 
-page_title: "Official Sentry Terraform Provider"
+page_title: "Official Sentry Terraform Provider (forked)"
 description: |-
   Set up Sentry Team, Projects, Alerts, and more. This provider is maintained with [Sentry.io](https://sentry.io)'s sponsorship. Please add any bug reports/feature requests in the GitHub repo.
 ---
