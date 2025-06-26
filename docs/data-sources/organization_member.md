@@ -31,3 +31,4 @@ data "sentry_organization_member" "default" {
 
 - `id` (String) The ID of this resource.
 - `role` (String) This is the role of the organization member.
+- `user_id` (String) The user ID of the organization member.
