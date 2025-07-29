@@ -170,16 +170,32 @@ func resourceSentryUptimeMonitorRead(d *schema.ResourceData, meta interface{}) e
 		return nil
 	}
 
-	d.Set("name", monitor.Name)
-	d.Set("url", monitor.URL)
-	d.Set("interval_seconds", monitor.IntervalSeconds)
-	d.Set("timeout_ms", monitor.TimeoutMs)
-	d.Set("status", monitor.Status)
-	if monitor.Owner != nil {
-		d.Set("owner", fmt.Sprintf("%s:%s", monitor.Owner.Type, monitor.Owner.ID))
+	if err := d.Set("name", monitor.Name); err != nil {
+		return err
 	}
-	d.Set("environment", monitor.Environment)
-	d.Set("method", monitor.Method)
+	if err := d.Set("url", monitor.URL); err != nil {
+		return err
+	}
+	if err := d.Set("interval_seconds", monitor.IntervalSeconds); err != nil {
+		return err
+	}
+	if err := d.Set("timeout_ms", monitor.TimeoutMs); err != nil {
+		return err
+	}
+	if err := d.Set("status", monitor.Status); err != nil {
+		return err
+	}
+	if monitor.Owner != nil {
+		if err := d.Set("owner", fmt.Sprintf("%s:%s", monitor.Owner.Type, monitor.Owner.ID)); err != nil {
+			return err
+		}
+	}
+	if err := d.Set("environment", monitor.Environment); err != nil {
+		return err
+	}
+	if err := d.Set("method", monitor.Method); err != nil {
+		return err
+	}
 
 	// Convert headers from API array of arrays format to Terraform list of objects
 	if monitor.Headers != nil {
@@ -193,16 +209,26 @@ func resourceSentryUptimeMonitorRead(d *schema.ResourceData, meta interface{}) e
 					}
 				}
 			}
-			d.Set("headers", terraformHeaders)
+			if err := d.Set("headers", terraformHeaders); err != nil {
+				return err
+			}
 		} else {
-			d.Set("headers", []map[string]interface{}{})
+			if err := d.Set("headers", []map[string]interface{}{}); err != nil {
+				return err
+			}
 		}
 	} else {
-		d.Set("headers", []map[string]interface{}{})
+		if err := d.Set("headers", []map[string]interface{}{}); err != nil {
+			return err
+		}
 	}
 
-	d.Set("body", monitor.Body)
-	d.Set("trace_sampling", monitor.TraceSampling)
+	if err := d.Set("body", monitor.Body); err != nil {
+		return err
+	}
+	if err := d.Set("trace_sampling", monitor.TraceSampling); err != nil {
+		return err
+	}
 	return nil
 }
 
