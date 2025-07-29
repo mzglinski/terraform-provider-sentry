@@ -49,6 +49,7 @@ func NewProvider(version string) func() *schema.Provider {
 				"sentry_organization":                   resourceSentryOrganization(),
 				"sentry_plugin":                         resourceSentryPlugin(),
 				"sentry_team":                           resourceSentryTeam(),
+				"sentry_uptime_monitor":                 resourceSentryUptimeMonitor(),
 				"sentry_external_user":                resourceSentryExternalUser(),
 			},
 
