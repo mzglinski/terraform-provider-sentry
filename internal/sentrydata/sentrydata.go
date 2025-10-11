@@ -188,7 +188,7 @@ var LevelMatchTypes = []string{
 	"LESS_OR_EQUAL",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L49-L83
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L50-L84
 var DashboardWidgetTypes = []string{
 	"discover",
 	"issue",
@@ -199,7 +199,7 @@ var DashboardWidgetTypes = []string{
 	"logs",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L141-L158
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L142-L159
 var DashboardWidgetDisplayTypes = []string{
 	"line",
 	"area",
