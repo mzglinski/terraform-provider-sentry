@@ -199,7 +199,7 @@ var DashboardWidgetTypes = []string{
 	"logs",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L142-L159
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L146-L163
 var DashboardWidgetDisplayTypes = []string{
 	"line",
 	"area",
