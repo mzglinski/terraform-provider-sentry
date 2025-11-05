@@ -188,7 +188,7 @@ var LevelMatchTypes = []string{
 	"LESS_OR_EQUAL",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L50-L84
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L50-L89
 var DashboardWidgetTypes = []string{
 	"discover",
 	"issue",
@@ -197,9 +197,10 @@ var DashboardWidgetTypes = []string{
 	"transaction-like",
 	"spans",
 	"logs",
+	"tracemetrics",
 }
 
-// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L150-L167
+// https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py#L163-L180
 var DashboardWidgetDisplayTypes = []string{
 	"line",
 	"area",
