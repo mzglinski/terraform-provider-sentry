@@ -114,7 +114,7 @@ func resourceSentryOrganizationMemberRead(ctx context.Context, d *schema.Resourc
 	}
 
 	tflog.Debug(ctx, "Reading organization member", map[string]interface{}{
-		"org":              org,
+		"org":          org,
 		"membershipID": memberID,
 	})
 	member, resp, err := client.OrganizationMembers.Get(ctx, org, memberID)
