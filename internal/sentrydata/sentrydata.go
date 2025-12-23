@@ -204,6 +204,7 @@ var DashboardWidgetTypes = []string{
 	"spans",
 	"logs",
 	"tracemetrics",
+	"mobile-app-size",
 }
 
 // https://github.com/getsentry/sentry/blob/master/src/sentry/models/dashboard_widget.py
