@@ -26,7 +26,7 @@ website/node_modules
 *.iml
 
 #binaries
-terraform-provider-sentry
+# terraform-provider-sentry
 main
 
 website/vendor
