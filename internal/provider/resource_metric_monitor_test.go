@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"testing"
@@ -14,50 +13,45 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/jianyuan/terraform-provider-sentry/internal/acctest"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/providerdata"
+	"github.com/jianyuan/terraform-provider-sentry/internal/resourceid"
 	"github.com/jianyuan/terraform-provider-sentry/internal/sentryclient"
+	"github.com/jianyuan/terraform-provider-sentry/internal/sweep"
 )
 
 func init() {
-	resource.AddTestSweepers("sentry_metric_monitor", &resource.Sweeper{
-		Name: "sentry_metric_monitor",
-		F: func(r string) error {
-			ctx := context.Background()
+	sweep.Register("sentry_metric_monitor", func(ctx context.Context, pd *providerdata.ProviderData) ([]sweep.Sweepable, error) {
+		var sweepables []sweep.Sweepable
 
-			params := &apiclient.ListOrganizationMonitorsParams{
-				Query: new("!type:issue_stream type:metric_issue"),
+		params := &apiclient.ListOrganizationMonitorsParams{
+			Query: new("!type:issue_stream type:metric_issue"),
+		}
+		for {
+			listHttpResp, err := acctest.SharedApiClient.ListOrganizationMonitorsWithResponse(ctx, acctest.TestOrganization, params)
+			if err != nil {
+				return nil, err
+			} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
+				return nil, fmt.Errorf("failed to list organization monitors: %s", listHttpResp.Status())
 			}
 
-			for {
-				listHttpResp, err := acctest.SharedApiClient.ListOrganizationMonitorsWithResponse(ctx, acctest.TestOrganization, params)
-				if err != nil {
-					return err
-				} else if listHttpResp.StatusCode() != http.StatusOK || listHttpResp.JSON200 == nil {
-					return fmt.Errorf("[ERROR] Failed to list organization monitors: %s", listHttpResp.Status())
+			for _, monitor := range *listHttpResp.JSON200 {
+				if !strings.HasPrefix(monitor.Name, "tf-metric-monitor") {
+					continue
 				}
 
-				for _, monitor := range *listHttpResp.JSON200 {
-					if !strings.HasPrefix(monitor.Name, "tf-metric-monitor") {
-						continue
-					}
-
-					deleteHttpResp, err := acctest.SharedApiClient.DeleteProjectMonitorWithResponse(ctx, acctest.TestOrganization, monitor.Id)
-					if err != nil {
-						log.Printf("[ERROR] Failed to delete metric monitor: %s", err)
-					} else if deleteHttpResp.StatusCode() != http.StatusNoContent {
-						log.Printf("[ERROR] Failed to delete metric monitor: %s", deleteHttpResp.Status())
-					} else {
-						log.Printf("[INFO] Deleted metric monitor: %s (ID: %s)", monitor.Name, monitor.Id)
-					}
-				}
-
-				params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
-				if params.Cursor == nil {
-					break
-				}
+				sweepables = append(sweepables, sweep.NewSweepResource(NewMetricMonitorResource, pd, map[string]any{
+					"organization": acctest.TestOrganization,
+					"id":           monitor.Id,
+				}))
 			}
 
-			return nil
-		},
+			params.Cursor = sentryclient.ParseNextPaginationCursor(listHttpResp.HTTPResponse)
+			if params.Cursor == nil {
+				break
+			}
+		}
+
+		return sweepables, nil
 	})
 }
 
@@ -389,9 +383,9 @@ func TestAccMetricMonitorResource_threshold(t *testing.T) {
 			{
 				ResourceName:            rn,
 				ImportState:             true,
-				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"query_type"},
+				ImportStateVerifyIgnore: []string{"project", "query_type"},
 			},
 		},
 	})
@@ -565,9 +559,9 @@ func TestAccMetricMonitorResource_change(t *testing.T) {
 			{
 				ResourceName:            rn,
 				ImportState:             true,
-				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"query_type"},
+				ImportStateVerifyIgnore: []string{"project", "query_type"},
 			},
 		},
 	})
@@ -649,9 +643,9 @@ func TestAccMetricMonitorResource_dynamic(t *testing.T) {
 			{
 				ResourceName:            rn,
 				ImportState:             true,
-				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"query_type"},
+				ImportStateVerifyIgnore: []string{"project", "query_type"},
 			},
 		},
 	})
@@ -741,9 +735,9 @@ func TestAccMetricMonitorResource_fractionalComparison(t *testing.T) {
 			{
 				ResourceName:            rn,
 				ImportState:             true,
-				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"query_type"},
+				ImportStateVerifyIgnore: []string{"project", "query_type"},
 			},
 		},
 	})
@@ -834,9 +828,9 @@ func TestAccMetricMonitorResource_eventsAnalyticsPlatform(t *testing.T) {
 			{
 				ResourceName:            rn,
 				ImportState:             true,
-				ImportStateIdFunc:       acctest.ThreePartImportStateIdFunc(rn, "organization", "project"),
+				ImportStateIdFunc:       resourceid.ImportState2PartIDFunc(rn, "organization", "id"),
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"query_type"},
+				ImportStateVerifyIgnore: []string{"project", "query_type"},
 			},
 		},
 	})
