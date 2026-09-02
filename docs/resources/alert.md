@@ -238,6 +238,20 @@ resource "sentry_alert" "default" {
             integration_id = data.sentry_organization_integration.jira.id
             project        = "349719"
             issue_type     = "1"
+
+            # Optional Jira fields. All values are IDs, not display names.
+            labels     = "oncall,triage" # comma-separated, not a list
+            components = ["10001"]
+            priority   = "3"
+            reporter   = "5b10ac8d82e05b22cc7d4ef5" # Jira account ID
+
+            # Any other Jira field, keyed by field ID. Sentry rewrites
+            # camelCase keys on write, so camelCase field IDs must be
+            # spelled all-lowercase: `fixversions`, not `fixVersions`.
+            additional_fields = {
+              customfield_10101 = "sre-team"
+              fixversions       = "10500"
+            }
           }
         }
       ]
@@ -268,6 +282,20 @@ resource "sentry_alert" "default" {
             integration_id = data.sentry_organization_integration.jira_server.id
             project        = "349719"
             issue_type     = "1"
+
+            # Optional Jira fields. All values are IDs, not display names.
+            labels     = "oncall,triage" # comma-separated, not a list
+            components = ["10001"]
+            priority   = "3"
+            reporter   = "jira-bot" # Jira Server username
+
+            # Any other Jira field, keyed by field ID. Sentry rewrites
+            # camelCase keys on write, so camelCase field IDs must be
+            # spelled all-lowercase: `fixversions`, not `fixVersions`.
+            additional_fields = {
+              customfield_10101 = "sre-team"
+              fixversions       = "10500"
+            }
           }
         }
       ]
@@ -970,6 +998,14 @@ Required:
 - `issue_type` (String) The ID of the type of issue that the ticket should be created as.
 - `project` (String) The ID of the Jira project.
 
+Optional:
+
+- `additional_fields` (Map of String) Additional Jira fields to set on the created issue, keyed by Jira field ID (e.g. `customfield_10101`). Use this for custom fields and any built-in field not exposed above. Sentry's API converts camelCase keys to snake_case on write, which corrupts them, so camelCase field IDs must be written all-lowercase: use `fixversions`, not `fixVersions`. Jira matches field IDs case-insensitively, so the lowercase spelling resolves to the same field.
+- `components` (Set of String) The IDs of the Jira components to assign to the issue, used for triage routing. These are component IDs, not names.
+- `labels` (String) A comma-separated list of labels to add to the issue (e.g. `oncall,triage`). Note: unlike the `github` action's `labels`, Jira expects a single comma-separated string rather than a list.
+- `priority` (String) The ID of the priority to set on the issue. This is a priority ID, not a name.
+- `reporter` (String) The Jira account ID of the user to set as the reporter of the issue. Useful for attributing automated tickets to a service account.
+
 
 <a id="nestedatt--action_filters--actions--jira_server"></a>
 ### Nested Schema for `action_filters.actions.jira_server`
@@ -980,6 +1016,14 @@ Required:
 - `issue_type` (String) The ID of the type of issue that the ticket should be created as.
 - `project` (String) The ID of the Jira project.
 
+Optional:
+
+- `additional_fields` (Map of String) Additional Jira Server fields to set on the created issue, keyed by Jira Server field ID (e.g. `customfield_10101`). Use this for custom fields and any built-in field not exposed above. Sentry's API converts camelCase keys to snake_case on write, which corrupts them, so camelCase field IDs must be written all-lowercase: use `fixversions`, not `fixVersions`. Jira matches field IDs case-insensitively, so the lowercase spelling resolves to the same field.
+- `components` (Set of String) The IDs of the Jira Server components to assign to the issue, used for triage routing. These are component IDs, not names.
+- `labels` (String) A comma-separated list of labels to add to the issue (e.g. `oncall,triage`). Note: unlike the `github` action's `labels`, Jira Server expects a single comma-separated string rather than a list.
+- `priority` (String) The ID of the priority to set on the issue. This is a priority ID, not a name.
+- `reporter` (String) The Jira Server username of the user to set as the reporter of the issue. Useful for attributing automated tickets to a service account.
+
 
 <a id="nestedatt--action_filters--actions--msteams"></a>
 ### Nested Schema for `action_filters.actions.msteams`
@@ -989,6 +1033,10 @@ Required:
 - `channel_name` (String) The name of the Microsoft Teams channel to send the notification to.
 - `integration_id` (String) The ID of the Microsoft Teams integration.
 - `team_id` (String) The integration ID associated with the Microsoft Teams team.
+
+Read-Only:
+
+- `team_thread_id` (String) The Microsoft Teams team's underlying thread ID, as resolved and returned by Sentry (e.g. `19:xxxxxxxx@thread.tacv2`). Sentry resolves `team_id` into this value server-side.
 
 
 <a id="nestedatt--action_filters--actions--opsgenie"></a>
@@ -1326,10 +1374,20 @@ Optional:
 
 Optional:
 
+- `event_frequency_count` (Attributes) Number of events seen by the workflow exceeds a threshold within an interval. (see [below for nested schema](#nestedatt--trigger_conditions--event_frequency_count))
 - `first_seen_event` (Attributes) A new issue is created. (see [below for nested schema](#nestedatt--trigger_conditions--first_seen_event))
 - `issue_resolved_trigger` (Attributes) An issue is resolved. (see [below for nested schema](#nestedatt--trigger_conditions--issue_resolved_trigger))
 - `reappeared_event` (Attributes) An issue escalates. (see [below for nested schema](#nestedatt--trigger_conditions--reappeared_event))
 - `regression_event` (Attributes) A resolved issue becomes unresolved. (see [below for nested schema](#nestedatt--trigger_conditions--regression_event))
+
+<a id="nestedatt--trigger_conditions--event_frequency_count"></a>
+### Nested Schema for `trigger_conditions.event_frequency_count`
+
+Required:
+
+- `interval` (String) The time period in which to evaluate the event count. Valid values are: `1m`, `5m`, `15m`, `1h`, `1d`, `1w`, and `30d`.
+- `value` (Number) The number of events that must be exceeded before the alert will fire.
+
 
 <a id="nestedatt--trigger_conditions--first_seen_event"></a>
 ### Nested Schema for `trigger_conditions.first_seen_event`

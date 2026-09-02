@@ -23,6 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/jianyuan/terraform-plugin-framework-utils/fwdiag"
 	"github.com/jianyuan/terraform-provider-sentry/internal/apiclient"
 	"github.com/jianyuan/terraform-provider-sentry/internal/diagutils"
 	intresource "github.com/jianyuan/terraform-provider-sentry/internal/resource"
@@ -161,13 +162,7 @@ func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Proje
 	}))
 	m.Name = types.StringValue(project.Name)
 	m.Slug = types.StringValue(project.Slug)
-
-	if v, err := project.Platform.Get(); err == nil && v != "" {
-		m.Platform = types.StringValue(v)
-	} else {
-		m.Platform = types.StringNull()
-	}
-
+	m.Platform = types.StringValue(project.Platform)
 	m.InternalId = types.StringValue(project.Id)
 	m.Features = supertypes.NewSetValueOfSlice(ctx, project.Features)
 	m.DigestsMinDelay = types.Int64Value(project.DigestsMinDelay)
@@ -176,14 +171,14 @@ func (m *ProjectResourceModel) Fill(ctx context.Context, project apiclient.Proje
 
 	var filters ProjectFilterResourceModel
 	diags.Append(filters.Fill(ctx, project)...)
-	m.Filters = tfutils.MergeDiagnostics(types.ObjectValueFrom(ctx, filters.AttributeTypes(), filters))(&diags)
+	m.Filters = fwdiag.Merge(types.ObjectValueFrom(ctx, filters.AttributeTypes(), filters))(&diags)
 
 	m.FingerprintingRules = sentrytypes.TrimmedStringValue(project.FingerprintingRules)
 	m.GroupingEnhancements = sentrytypes.TrimmedStringValue(project.GroupingEnhancements)
 
 	var clientSecurity ProjectClientSecurityResourceModel
 	diags.Append(clientSecurity.Fill(ctx, project)...)
-	m.ClientSecurity = tfutils.MergeDiagnostics(types.ObjectValueFrom(ctx, clientSecurity.AttributeTypes(), clientSecurity))(&diags)
+	m.ClientSecurity = fwdiag.Merge(types.ObjectValueFrom(ctx, clientSecurity.AttributeTypes(), clientSecurity))(&diags)
 
 	if project.HighlightTags != nil {
 		m.HighlightTags = supertypes.NewSetValueOfSlice(ctx, *project.HighlightTags)
@@ -239,7 +234,7 @@ func (r *ProjectResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"platform": tfutils.WithEnumStringAttribute(schema.StringAttribute{
 				MarkdownDescription: "The platform for this project. Use `other` for platforms not listed.",
-				Optional:            true,
+				Required:            true,
 			}, sentrydata.Platforms),
 			"default_rules": schema.BoolAttribute{
 				Description: "Whether to create a default issue alert. Defaults to true where the behavior is to alert the user on every new issue.",
@@ -483,7 +478,7 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	teams := data.Teams.DiagsGet(ctx, resp.Diagnostics)
+	teams := fwdiag.Merge(data.Teams.Get(ctx))(&resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -496,7 +491,7 @@ func (r *ProjectResource) Create(ctx context.Context, req resource.CreateRequest
 	// Create the project
 	createBody := apiclient.CreateOrganizationTeamProjectJSONRequestBody{
 		Name:         data.Name.ValueString(),
-		Platform:     data.Platform.ValueStringPointer(),
+		Platform:     data.Platform.ValueString(),
 		DefaultRules: data.DefaultRules.ValueBoolPointer(),
 	}
 
@@ -866,8 +861,8 @@ func (r *ProjectResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	// Update teams
 	if !plan.Teams.Equal(state.Teams) {
-		planTeams := plan.Teams.DiagsGet(ctx, resp.Diagnostics)
-		stateTeams := state.Teams.DiagsGet(ctx, resp.Diagnostics)
+		planTeams := fwdiag.Merge(plan.Teams.Get(ctx))(&resp.Diagnostics)
+		stateTeams := fwdiag.Merge(state.Teams.Get(ctx))(&resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
 		}

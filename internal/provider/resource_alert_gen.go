@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -100,7 +101,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemFirstSeenEvent](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count")),
 							},
 							Attributes: map[string]schema.Attribute{},
 						},
@@ -109,7 +110,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count")),
 							},
 							Attributes: map[string]schema.Attribute{},
 						},
@@ -118,7 +119,7 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemReappearedEvent](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("regression_event")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("regression_event"), path.MatchRelative().AtParent().AtName("event_frequency_count")),
 							},
 							Attributes: map[string]schema.Attribute{},
 						},
@@ -127,9 +128,35 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							Optional:            true,
 							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemRegressionEvent](ctx),
 							Validators: []validator.Object{
-								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event")),
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("event_frequency_count")),
 							},
 							Attributes: map[string]schema.Attribute{},
+						},
+						"event_frequency_count": schema.SingleNestedAttribute{
+							MarkdownDescription: "Number of events seen by the workflow exceeds a threshold within an interval.",
+							Optional:            true,
+							CustomType:          supertypes.NewSingleNestedObjectTypeOf[AlertResourceModelTriggerConditionsItemEventFrequencyCount](ctx),
+							Validators: []validator.Object{
+								objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("first_seen_event"), path.MatchRelative().AtParent().AtName("issue_resolved_trigger"), path.MatchRelative().AtParent().AtName("reappeared_event"), path.MatchRelative().AtParent().AtName("regression_event")),
+							},
+							Attributes: map[string]schema.Attribute{
+								"value": schema.Int64Attribute{
+									MarkdownDescription: "The number of events that must be exceeded before the alert will fire.",
+									Required:            true,
+									CustomType:          supertypes.Int64Type{},
+									Validators: []validator.Int64{
+										int64validator.AtLeast(0),
+									},
+								},
+								"interval": tfutils.WithEnumStringAttribute(
+									schema.StringAttribute{
+										MarkdownDescription: "The time period in which to evaluate the event count.",
+										Required:            true,
+										CustomType:          supertypes.StringType{},
+									},
+									sentrydata.EventFrequencyStandardIntervals,
+								),
+							},
 						},
 					},
 				},
@@ -892,11 +919,16 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 											"team_id": schema.StringAttribute{
 												MarkdownDescription: "The integration ID associated with the Microsoft Teams team.",
 												Required:            true,
-												CustomType:          supertypes.StringType{},
+												CustomType:          sentrytypes.MsTeamsTeamIdType{},
 											},
 											"channel_name": schema.StringAttribute{
 												MarkdownDescription: "The name of the Microsoft Teams channel to send the notification to.",
 												Required:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"team_thread_id": schema.StringAttribute{
+												MarkdownDescription: "The Microsoft Teams team's underlying thread ID, as resolved and returned by Sentry (e.g. `19:xxxxxxxx@thread.tacv2`). Sentry resolves `team_id` into this value server-side.",
+												Computed:            true,
 												CustomType:          supertypes.StringType{},
 											},
 										},
@@ -979,6 +1011,34 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												Required:            true,
 												CustomType:          supertypes.StringType{},
 											},
+											"labels": schema.StringAttribute{
+												MarkdownDescription: "A comma-separated list of labels to add to the issue (e.g. `oncall,triage`). Note: unlike the `github` action's `labels`, Jira expects a single comma-separated string rather than a list.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"components": schema.SetAttribute{
+												MarkdownDescription: "The IDs of the Jira components to assign to the issue, used for triage routing. These are component IDs, not names.",
+												Optional:            true,
+												CustomType:          supertypes.NewSetTypeOf[string](ctx),
+											},
+											"priority": schema.StringAttribute{
+												MarkdownDescription: "The ID of the priority to set on the issue. This is a priority ID, not a name.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"reporter": schema.StringAttribute{
+												MarkdownDescription: "The Jira account ID of the user to set as the reporter of the issue. Useful for attributing automated tickets to a service account.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"additional_fields": schema.MapAttribute{
+												MarkdownDescription: "Additional Jira fields to set on the created issue, keyed by Jira field ID (e.g. `customfield_10101`). Use this for custom fields and any built-in field not exposed above. Sentry's API converts camelCase keys to snake_case on write, which corrupts them, so camelCase field IDs must be written all-lowercase: use `fixversions`, not `fixVersions`. Jira matches field IDs case-insensitively, so the lowercase spelling resolves to the same field.",
+												Optional:            true,
+												CustomType:          supertypes.NewMapTypeOf[string](ctx),
+												Validators: []validator.Map{
+													mapvalidator.KeysAre(ticketAdditionalFieldKeyValidator()),
+												},
+											},
 										},
 									},
 									"jira_server": schema.SingleNestedAttribute{
@@ -1003,6 +1063,34 @@ func (r *AlertResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 												MarkdownDescription: "The ID of the type of issue that the ticket should be created as.",
 												Required:            true,
 												CustomType:          supertypes.StringType{},
+											},
+											"labels": schema.StringAttribute{
+												MarkdownDescription: "A comma-separated list of labels to add to the issue (e.g. `oncall,triage`). Note: unlike the `github` action's `labels`, Jira Server expects a single comma-separated string rather than a list.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"components": schema.SetAttribute{
+												MarkdownDescription: "The IDs of the Jira Server components to assign to the issue, used for triage routing. These are component IDs, not names.",
+												Optional:            true,
+												CustomType:          supertypes.NewSetTypeOf[string](ctx),
+											},
+											"priority": schema.StringAttribute{
+												MarkdownDescription: "The ID of the priority to set on the issue. This is a priority ID, not a name.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"reporter": schema.StringAttribute{
+												MarkdownDescription: "The Jira Server username of the user to set as the reporter of the issue. Useful for attributing automated tickets to a service account.",
+												Optional:            true,
+												CustomType:          supertypes.StringType{},
+											},
+											"additional_fields": schema.MapAttribute{
+												MarkdownDescription: "Additional Jira Server fields to set on the created issue, keyed by Jira Server field ID (e.g. `customfield_10101`). Use this for custom fields and any built-in field not exposed above. Sentry's API converts camelCase keys to snake_case on write, which corrupts them, so camelCase field IDs must be written all-lowercase: use `fixversions`, not `fixVersions`. Jira matches field IDs case-insensitively, so the lowercase spelling resolves to the same field.",
+												Optional:            true,
+												CustomType:          supertypes.NewMapTypeOf[string](ctx),
+												Validators: []validator.Map{
+													mapvalidator.KeysAre(ticketAdditionalFieldKeyValidator()),
+												},
 											},
 										},
 									},
@@ -1261,6 +1349,7 @@ type AlertResourceModelTriggerConditionsItem struct {
 	IssueResolvedTrigger supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemIssueResolvedTrigger] `tfsdk:"issue_resolved_trigger"`
 	ReappearedEvent      supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemReappearedEvent]      `tfsdk:"reappeared_event"`
 	RegressionEvent      supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemRegressionEvent]      `tfsdk:"regression_event"`
+	EventFrequencyCount  supertypes.SingleNestedObjectValueOf[AlertResourceModelTriggerConditionsItemEventFrequencyCount]  `tfsdk:"event_frequency_count"`
 }
 
 type AlertResourceModelTriggerConditionsItemFirstSeenEvent struct {
@@ -1273,6 +1362,11 @@ type AlertResourceModelTriggerConditionsItemReappearedEvent struct {
 }
 
 type AlertResourceModelTriggerConditionsItemRegressionEvent struct {
+}
+
+type AlertResourceModelTriggerConditionsItemEventFrequencyCount struct {
+	Value    supertypes.Int64Value  `tfsdk:"value"`
+	Interval supertypes.StringValue `tfsdk:"interval"`
 }
 
 type AlertResourceModelActionFiltersItem struct {
@@ -1466,9 +1560,10 @@ type AlertResourceModelActionFiltersItemActionsItemDiscord struct {
 }
 
 type AlertResourceModelActionFiltersItemActionsItemMsteams struct {
-	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
-	TeamId        supertypes.StringValue `tfsdk:"team_id"`
-	ChannelName   supertypes.StringValue `tfsdk:"channel_name"`
+	IntegrationId supertypes.StringValue    `tfsdk:"integration_id"`
+	TeamId        sentrytypes.MsTeamsTeamId `tfsdk:"team_id"`
+	ChannelName   supertypes.StringValue    `tfsdk:"channel_name"`
+	TeamThreadId  supertypes.StringValue    `tfsdk:"team_thread_id"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItemOpsgenie struct {
@@ -1485,15 +1580,25 @@ type AlertResourceModelActionFiltersItemActionsItemVsts struct {
 }
 
 type AlertResourceModelActionFiltersItemActionsItemJira struct {
-	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
-	Project       supertypes.StringValue `tfsdk:"project"`
-	IssueType     supertypes.StringValue `tfsdk:"issue_type"`
+	IntegrationId    supertypes.StringValue        `tfsdk:"integration_id"`
+	Project          supertypes.StringValue        `tfsdk:"project"`
+	IssueType        supertypes.StringValue        `tfsdk:"issue_type"`
+	Labels           supertypes.StringValue        `tfsdk:"labels"`
+	Components       supertypes.SetValueOf[string] `tfsdk:"components"`
+	Priority         supertypes.StringValue        `tfsdk:"priority"`
+	Reporter         supertypes.StringValue        `tfsdk:"reporter"`
+	AdditionalFields supertypes.MapValueOf[string] `tfsdk:"additional_fields"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItemJiraServer struct {
-	IntegrationId supertypes.StringValue `tfsdk:"integration_id"`
-	Project       supertypes.StringValue `tfsdk:"project"`
-	IssueType     supertypes.StringValue `tfsdk:"issue_type"`
+	IntegrationId    supertypes.StringValue        `tfsdk:"integration_id"`
+	Project          supertypes.StringValue        `tfsdk:"project"`
+	IssueType        supertypes.StringValue        `tfsdk:"issue_type"`
+	Labels           supertypes.StringValue        `tfsdk:"labels"`
+	Components       supertypes.SetValueOf[string] `tfsdk:"components"`
+	Priority         supertypes.StringValue        `tfsdk:"priority"`
+	Reporter         supertypes.StringValue        `tfsdk:"reporter"`
+	AdditionalFields supertypes.MapValueOf[string] `tfsdk:"additional_fields"`
 }
 
 type AlertResourceModelActionFiltersItemActionsItemGithub struct {

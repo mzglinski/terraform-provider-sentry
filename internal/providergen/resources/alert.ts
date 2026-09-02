@@ -113,6 +113,31 @@ export default {
           computedOptionalRequired: "optional",
           attributes: [],
         },
+        {
+          name: "event_frequency_count",
+          type: "single_nested",
+          description:
+            "Number of events seen by the workflow exceeds a threshold within an interval.",
+          computedOptionalRequired: "optional",
+          attributes: [
+            {
+              name: "value",
+              type: "int64",
+              description:
+                "The number of events that must be exceeded before the alert will fire.",
+              computedOptionalRequired: "required",
+              validators: ["int64validator.AtLeast(0)"],
+            },
+            {
+              name: "interval",
+              type: "string",
+              description:
+                "The time period in which to evaluate the event count.",
+              computedOptionalRequired: "required",
+              enum: `sentrydata.EventFrequencyStandardIntervals`,
+            },
+          ],
+        },
       ]),
     },
     {
@@ -880,6 +905,10 @@ export default {
                   description:
                     "The integration ID associated with the Microsoft Teams team.",
                   computedOptionalRequired: "required",
+                  customType: {
+                    type: "sentrytypes.MsTeamsTeamIdType{}",
+                    value: "sentrytypes.MsTeamsTeamId",
+                  },
                 },
                 {
                   name: "channel_name",
@@ -887,6 +916,13 @@ export default {
                   description:
                     "The name of the Microsoft Teams channel to send the notification to.",
                   computedOptionalRequired: "required",
+                },
+                {
+                  name: "team_thread_id",
+                  type: "string",
+                  description:
+                    "The Microsoft Teams team's underlying thread ID, as resolved and returned by Sentry (e.g. `19:xxxxxxxx@thread.tacv2`). Sentry resolves `team_id` into this value server-side.",
+                  computedOptionalRequired: "computed",
                 },
               ],
             },
@@ -974,6 +1010,46 @@ export default {
                     "The ID of the type of issue that the ticket should be created as.",
                   computedOptionalRequired: "required",
                 },
+                {
+                  name: "labels",
+                  type: "string",
+                  description:
+                    "A comma-separated list of labels to add to the issue (e.g. `oncall,triage`). Note: unlike the `github` action's `labels`, Jira expects a single comma-separated string rather than a list.",
+                  computedOptionalRequired: "optional",
+                },
+                {
+                  name: "components",
+                  type: "set",
+                  description:
+                    "The IDs of the Jira components to assign to the issue, used for triage routing. These are component IDs, not names.",
+                  computedOptionalRequired: "optional",
+                  elementType: "string",
+                },
+                {
+                  name: "priority",
+                  type: "string",
+                  description:
+                    "The ID of the priority to set on the issue. This is a priority ID, not a name.",
+                  computedOptionalRequired: "optional",
+                },
+                {
+                  name: "reporter",
+                  type: "string",
+                  description:
+                    "The Jira account ID of the user to set as the reporter of the issue. Useful for attributing automated tickets to a service account.",
+                  computedOptionalRequired: "optional",
+                },
+                {
+                  name: "additional_fields",
+                  type: "map",
+                  description:
+                    "Additional Jira fields to set on the created issue, keyed by Jira field ID (e.g. `customfield_10101`). Use this for custom fields and any built-in field not exposed above. Sentry's API converts camelCase keys to snake_case on write, which corrupts them, so camelCase field IDs must be written all-lowercase: use `fixversions`, not `fixVersions`. Jira matches field IDs case-insensitively, so the lowercase spelling resolves to the same field.",
+                  computedOptionalRequired: "optional",
+                  elementType: "string",
+                  validators: [
+                    `mapvalidator.KeysAre(ticketAdditionalFieldKeyValidator())`,
+                  ],
+                },
               ],
             },
             {
@@ -1000,6 +1076,46 @@ export default {
                   description:
                     "The ID of the type of issue that the ticket should be created as.",
                   computedOptionalRequired: "required",
+                },
+                {
+                  name: "labels",
+                  type: "string",
+                  description:
+                    "A comma-separated list of labels to add to the issue (e.g. `oncall,triage`). Note: unlike the `github` action's `labels`, Jira Server expects a single comma-separated string rather than a list.",
+                  computedOptionalRequired: "optional",
+                },
+                {
+                  name: "components",
+                  type: "set",
+                  description:
+                    "The IDs of the Jira Server components to assign to the issue, used for triage routing. These are component IDs, not names.",
+                  computedOptionalRequired: "optional",
+                  elementType: "string",
+                },
+                {
+                  name: "priority",
+                  type: "string",
+                  description:
+                    "The ID of the priority to set on the issue. This is a priority ID, not a name.",
+                  computedOptionalRequired: "optional",
+                },
+                {
+                  name: "reporter",
+                  type: "string",
+                  description:
+                    "The Jira Server username of the user to set as the reporter of the issue. Useful for attributing automated tickets to a service account.",
+                  computedOptionalRequired: "optional",
+                },
+                {
+                  name: "additional_fields",
+                  type: "map",
+                  description:
+                    "Additional Jira Server fields to set on the created issue, keyed by Jira Server field ID (e.g. `customfield_10101`). Use this for custom fields and any built-in field not exposed above. Sentry's API converts camelCase keys to snake_case on write, which corrupts them, so camelCase field IDs must be written all-lowercase: use `fixversions`, not `fixVersions`. Jira matches field IDs case-insensitively, so the lowercase spelling resolves to the same field.",
+                  computedOptionalRequired: "optional",
+                  elementType: "string",
+                  validators: [
+                    `mapvalidator.KeysAre(ticketAdditionalFieldKeyValidator())`,
+                  ],
                 },
               ],
             },
